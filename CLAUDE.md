@@ -90,6 +90,7 @@ src/features/git-[feature-name]/
 - ✅ `git_branch_create` - ブランチ作成（ベースブランチ指定可能）
 - ✅ `git_branch_merge` - ブランチマージ（複数戦略対応）
 - ✅ `git_log` - コミット履歴取得（件数/ブランチ指定可能）
+- ✅ `git_checkout` - ブランチ切り替え/ファイル復元（強制切り替え対応）
 
 ## エラーハンドリング
 

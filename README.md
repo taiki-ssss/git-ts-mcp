@@ -13,6 +13,7 @@ Git操作をMCP (Model Context Protocol) ツールとして提供するサーバ
 - ✅ **git_branch_create** - 新しいブランチを作成（ベースブランチ指定、チェックアウトオプション付き）
 - ✅ **git_branch_merge** - ブランチをマージ（複数のマージ戦略対応）
 - ✅ **git_log** - コミット履歴を取得（件数制限、ブランチ指定可能）
+- ✅ **git_checkout** - ブランチを切り替えまたはファイルを復元（強制切り替え、ファイル指定対応）
 
 ## インストール
 
@@ -65,7 +66,8 @@ src/
 │   ├── git-branch-list/     # ブランチ一覧機能
 │   ├── git-branch-create/   # ブランチ作成機能
 │   ├── git-branch-merge/    # ブランチマージ機能
-│   └── git-log/             # コミット履歴取得機能
+│   ├── git-log/             # コミット履歴取得機能
+│   └── git-checkout/        # ブランチ切り替え/ファイル復元機能
 ├── entities/    # エンティティ層（未使用）
 └── shared/      # 共有層（ユーティリティ）
 ```
@@ -119,6 +121,45 @@ project/
       "email": "john@example.com"
     }
   ]
+}
+```
+
+### git_checkout
+
+ブランチを切り替え:
+
+```json
+{
+  "tool": "git_checkout",
+  "arguments": {
+    "repoPath": "/path/to/repo",
+    "target": "feature-branch",
+    "force": false
+  }
+}
+```
+
+特定のファイルを復元:
+
+```json
+{
+  "tool": "git_checkout",
+  "arguments": {
+    "repoPath": "/path/to/repo",
+    "target": "main",
+    "files": ["src/file1.js", "src/file2.js"]
+  }
+}
+```
+
+レスポンス例:
+
+```json
+{
+  "success": true,
+  "previousBranch": "main",
+  "currentBranch": "feature-branch",
+  "message": "Switched to branch 'feature-branch'"
 }
 ```
 

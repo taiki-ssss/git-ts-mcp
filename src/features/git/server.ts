@@ -7,6 +7,7 @@ import { createGitBranchListHandler } from '../git-branch-list/server.js';
 import { createGitBranchCreateHandler } from '../git-branch-create/server.js';
 import { createGitBranchMergeHandler } from '../git-branch-merge/server.js';
 import { createGitLogHandler } from '../git-log/server.js';
+import { createGitCheckoutHandler } from '../git-checkout/server.js';
 
 export function createGitServer(): McpServer {
   const server = new McpServer({
@@ -99,6 +100,19 @@ export function createGitServer(): McpServer {
       branch: z.string().min(1).optional().describe('Branch name to get logs from'),
     },
     createGitLogHandler()
+  );
+
+  // Register git_checkout tool
+  server.tool(
+    'git_checkout',
+    'Switch branches or restore working tree files',
+    {
+      repoPath: z.string().min(1).describe('Path to the git repository'),
+      target: z.string().min(1).describe('Branch name, commit hash, or tag to checkout'),
+      force: z.boolean().optional().describe('Force checkout even with uncommitted changes'),
+      files: z.array(z.string().min(1)).optional().describe('Specific files to checkout'),
+    },
+    createGitCheckoutHandler()
   );
 
   return server;
