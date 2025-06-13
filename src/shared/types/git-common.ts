@@ -1,4 +1,5 @@
 export interface GitOperationResult {
+  [x: string]: unknown;
   content: Array<{
     type: 'text';
     text: string;
@@ -6,6 +7,7 @@ export interface GitOperationResult {
 }
 
 export interface GitErrorResult {
+  [x: string]: unknown;
   content: Array<{
     type: 'text';
     text: string;
