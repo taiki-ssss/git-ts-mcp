@@ -4,6 +4,7 @@ import { gitCommitHandler } from '../git-commit/server.js';
 import { gitStatusHandler } from '../git-status/server.js';
 import { createGitAddHandler } from '../git-add/server.js';
 import { createGitBranchListHandler } from '../git-branch-list/server.js';
+import { createGitBranchCreateHandler } from '../git-branch-create/server.js';
 
 export function createGitServer(): McpServer {
   const server = new McpServer({
@@ -56,6 +57,19 @@ export function createGitServer(): McpServer {
       includeRemote: z.boolean().optional().describe('Include remote branches in the list'),
     },
     createGitBranchListHandler()
+  );
+
+  // Register git_branch_create tool
+  server.tool(
+    'git_branch_create',
+    'Create a new git branch',
+    {
+      repoPath: z.string().min(1).describe('Path to the git repository'),
+      branchName: z.string().min(1).describe('Name of the branch to create'),
+      baseBranch: z.string().optional().describe('Base branch to create from (optional)'),
+      checkout: z.boolean().optional().describe('Checkout the branch after creation'),
+    },
+    createGitBranchCreateHandler()
   );
 
   return server;
