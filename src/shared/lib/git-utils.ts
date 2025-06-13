@@ -26,15 +26,10 @@ export async function validateAndInitializeGit(
 
   if (!repoPath || typeof repoPath !== 'string' || repoPath.trim().length === 0) {
     debug('Invalid repository path provided', { repoPath });
-    return err(new Error('Repository path is required and must be a non-empty string'));
+    return err(new Error('Repository path cannot be empty'));
   }
 
   const normalizedPath = repoPath.trim();
-
-  if (!existsSync(normalizedPath)) {
-    debug('Repository path does not exist', { repoPath: normalizedPath });
-    return err(new Error(`Repository path does not exist: ${normalizedPath}`));
-  }
 
   try {
     let git: SimpleGit;
@@ -81,7 +76,7 @@ export function validateRepositoryPath(repoPath: string): Result<string, Error> 
 
 export function validateNonEmptyString(value: string, fieldName: string): Result<string, Error> {
   if (!value || typeof value !== 'string') {
-    return err(new Error(`${fieldName} is required and must be a string`));
+    return err(new Error(`${fieldName} cannot be empty`));
   }
 
   const trimmed = value.trim();
