@@ -1,8 +1,8 @@
 import { Result, ok, err } from 'neverthrow';
-import { simpleGit, LogResult, DefaultLogFields } from 'simple-git';
-import { existsSync } from 'fs';
+import { LogResult, DefaultLogFields } from 'simple-git';
 import { GitLogInput, GitLogResult, GitLogEntry } from './types.js';
 import createDebug from 'debug';
+import { validateAndInitializeGit } from '../../shared/lib/git-utils.js';
 
 const debug = createDebug('mcp:git-log');
 
@@ -11,29 +11,19 @@ export async function gitLog(input: GitLogInput): Promise<Result<GitLogResult, E
 
   const { repoPath, maxCount = 10, branch } = input;
 
-  if (!repoPath || !repoPath.trim()) {
-    debug('Empty repository path provided');
-    return err(new Error('Repository path cannot be empty'));
-  }
-
   if (maxCount !== undefined && maxCount <= 0) {
     debug('Invalid maxCount:', maxCount);
     return err(new Error('maxCount must be a positive number'));
   }
 
-  if (!existsSync(repoPath)) {
-    debug('Repository path does not exist:', repoPath);
-    return err(new Error('Repository path does not exist'));
+  const gitResult = await validateAndInitializeGit(repoPath);
+  if (gitResult.isErr()) {
+    return err(gitResult.error);
   }
 
-  const git = simpleGit(repoPath);
+  const { git } = gitResult.value;
 
   try {
-    const isRepo = await git.checkIsRepo();
-    if (!isRepo) {
-      debug('Path is not a git repository:', repoPath);
-      return err(new Error('The specified path is not a git repository'));
-    }
 
     const hasCommits = await git.log({ maxCount: 1 }).catch(() => null);
     if (!hasCommits || hasCommits.total === 0) {
@@ -62,7 +52,7 @@ export async function gitLog(input: GitLogInput): Promise<Result<GitLogResult, E
 
     const logResult: LogResult<DefaultLogFields> = await git.log(logOptions);
     
-    const logs: GitLogEntry[] = logResult.all.map(commit => ({
+    const logs: GitLogEntry[] = logResult.all.map((commit: any) => ({
       hash: commit.hash,
       date: commit.date,
       message: commit.message,

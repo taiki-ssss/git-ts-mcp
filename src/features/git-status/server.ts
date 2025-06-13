@@ -1,64 +1,40 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { simpleGit, SimpleGit } from 'simple-git';
 import { Result, ok, err } from 'neverthrow';
 import Debug from 'debug';
+import { validateAndInitializeGit } from '../../shared/lib/git-utils.js';
+import { GitOperationResult, formatResultMatch } from '../../shared/types/git-common.js';
 
 const debug = Debug('mcp:git-status');
 
-type GitStatusResult = {
-  content: Array<{
-    type: 'text';
-    text: string;
-  }>;
-};
-
-async function performGitStatus(repoPath: string): Promise<Result<GitStatusResult, Error>> {
+async function performGitStatus(repoPath: string): Promise<Result<GitOperationResult, Error>> {
   debug('Starting git status operation', { repoPath });
 
-  // Validate repository path
-  if (repoPath === '' || (typeof repoPath === 'string' && repoPath.trim().length === 0)) {
-    debug('Empty repository path');
-    return err(new Error('Repository path cannot be empty'));
+  const gitResult = await validateAndInitializeGit(repoPath);
+  if (gitResult.isErr()) {
+    return err(gitResult.error);
   }
 
-  if (!repoPath || typeof repoPath !== 'string') {
-    debug('Invalid repository path', { repoPath });
-    return err(new Error('Repository path is required and must be a string'));
-  }
+  const { git } = gitResult.value;
 
   try {
-    // Initialize git instance for the specified repository
-    debug('Initializing git instance', { repoPath });
-    const git: SimpleGit = simpleGit(repoPath);
 
-    // Check if the path is a valid git repository
-    debug('Checking if path is a git repository');
-    const isRepo = await git.checkIsRepo();
-    if (!isRepo) {
-      debug('Path is not a git repository', { repoPath });
-      return err(new Error(`The path '${repoPath}' is not a git repository`));
-    }
-
-    // Get current status
     debug('Getting repository status');
     const status = await git.status();
     
-    // Get current branch
     debug('Getting current branch');
     const branch = await git.branch();
     
-    // Format the status information
     const stagedFiles = status.staged.length > 0 
-      ? `Staged files:\n${status.staged.map(f => `  - ${f}`).join('\n')}`
+      ? `Staged files:\n${status.staged.map((f: string) => `  - ${f}`).join('\n')}`
       : 'No staged files';
     
     const modifiedFiles = status.modified.length > 0
-      ? `Modified files:\n${status.modified.map(f => `  - ${f}`).join('\n')}`
+      ? `Modified files:\n${status.modified.map((f: string) => `  - ${f}`).join('\n')}`
       : 'No modified files';
     
     const untrackedFiles = status.not_added.length > 0
-      ? `Untracked files:\n${status.not_added.map(f => `  - ${f}`).join('\n')}`
+      ? `Untracked files:\n${status.not_added.map((f: string) => `  - ${f}`).join('\n')}`
       : 'No untracked files';
     
     const aheadBehind = status.ahead > 0 || status.behind > 0
@@ -83,16 +59,5 @@ async function performGitStatus(repoPath: string): Promise<Result<GitStatusResul
 
 export async function gitStatusHandler({ repoPath }: { repoPath: string }) {
   const result = await performGitStatus(repoPath);
-  
-  return result.match(
-    (value) => value,
-    (error) => ({
-      content: [
-        {
-          type: 'text' as const,
-          text: `Error: ${error.message}`,
-        },
-      ],
-    })
-  );
+  return formatResultMatch(result);
 }

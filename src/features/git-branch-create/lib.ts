@@ -1,8 +1,7 @@
 import { Result, ok, err } from 'neverthrow';
-import { simpleGit, SimpleGit } from 'simple-git';
-import { existsSync } from 'fs';
 import debugFactory from 'debug';
 import type { GitBranchCreateResult } from './types.js';
+import { validateAndInitializeGit, validateNonEmptyString } from '../../shared/lib/git-utils.js';
 
 const debug = debugFactory('mcp:git-branch-create');
 
@@ -14,56 +13,43 @@ export async function createBranch(
 ): Promise<Result<GitBranchCreateResult, Error>> {
   debug('Creating branch', { repoPath, branchName, baseBranch, checkout });
 
-  // Validate input
-  if (!repoPath || repoPath.trim() === '') {
-    debug('Empty repository path provided');
-    return err(new Error('Repository path cannot be empty'));
+  const branchNameValidation = validateNonEmptyString(branchName, 'Branch name');
+  if (branchNameValidation.isErr()) {
+    return err(branchNameValidation.error);
   }
 
-  if (!branchName || branchName.trim() === '') {
-    debug('Empty branch name provided');
-    return err(new Error('Branch name cannot be empty'));
-  }
-
-  // Validate branch name
   if (!isValidBranchName(branchName)) {
     debug('Invalid branch name', { branchName });
     return err(new Error(`Invalid branch name: '${branchName}'`));
   }
 
-  // Check if the repository exists
-  if (!existsSync(repoPath)) {
-    debug('Repository path does not exist', { repoPath });
-    return err(new Error(`Repository path does not exist: ${repoPath}`));
+  const gitResult = await validateAndInitializeGit(repoPath);
+  if (gitResult.isErr()) {
+    return err(gitResult.error);
   }
 
-  try {
-    const git: SimpleGit = simpleGit(repoPath);
+  const { git } = gitResult.value;
 
-    // Get current branches
+  try {
+
     debug('Fetching existing branches');
     const branchSummary = await git.branchLocal();
     
-    // Check if branch already exists
     if (branchSummary.all.includes(branchName)) {
       debug('Branch already exists', { branchName });
       return err(new Error(`Branch '${branchName}' already exists`));
     }
 
-    // Determine base branch
     const actualBaseBranch = baseBranch || branchSummary.current;
     
-    // Check if base branch exists
     if (baseBranch && !branchSummary.all.includes(baseBranch)) {
       debug('Base branch does not exist', { baseBranch });
       return err(new Error(`Base branch '${baseBranch}' does not exist`));
     }
 
-    // Create the branch
     debug('Creating new branch', { branchName, baseBranch: actualBaseBranch });
     await git.checkoutBranch(branchName, actualBaseBranch);
 
-    // Checkout if requested
     if (checkout) {
       debug('Checking out new branch', { branchName });
       await git.checkout(branchName);
