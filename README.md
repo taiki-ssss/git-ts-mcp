@@ -11,6 +11,8 @@ Git操作をMCP (Model Context Protocol) ツールとして提供するサーバ
 - ✅ **git_add** - ファイルをステージングエリアに追加（個別/全ファイル対応）
 - ✅ **git_branch_list** - ブランチ一覧を取得（ローカル/リモート対応）
 - ✅ **git_branch_create** - 新しいブランチを作成（ベースブランチ指定、チェックアウトオプション付き）
+- ✅ **git_branch_merge** - ブランチをマージ（複数のマージ戦略対応）
+- ✅ **git_log** - コミット履歴を取得（件数制限、ブランチ指定可能）
 
 ## インストール
 
@@ -61,7 +63,9 @@ src/
 │   ├── git-status/          # ステータス確認機能
 │   ├── git-add/             # ステージング機能
 │   ├── git-branch-list/     # ブランチ一覧機能
-│   └── git-branch-create/   # ブランチ作成機能
+│   ├── git-branch-create/   # ブランチ作成機能
+│   ├── git-branch-merge/    # ブランチマージ機能
+│   └── git-log/             # コミット履歴取得機能
 ├── entities/    # エンティティ層（未使用）
 └── shared/      # 共有層（ユーティリティ）
 ```
@@ -84,6 +88,39 @@ project/
 
 - `/project:rule`: プロジェクトのルールをに確認する
 - `/project:task`: タスクの件数を確認する
+
+## ツール使用例
+
+### git_log
+
+コミット履歴を取得:
+
+```json
+{
+  "tool": "git_log",
+  "arguments": {
+    "repoPath": "/path/to/repo",
+    "maxCount": 20,
+    "branch": "main"
+  }
+}
+```
+
+レスポンス例:
+
+```json
+{
+  "logs": [
+    {
+      "hash": "abc123def456...",
+      "date": "2024-01-01T12:00:00+09:00",
+      "message": "Add new feature",
+      "author": "John Doe",
+      "email": "john@example.com"
+    }
+  ]
+}
+```
 
 ## 参考リンク
 

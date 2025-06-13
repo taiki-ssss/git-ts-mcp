@@ -6,6 +6,7 @@ import { createGitAddHandler } from '../git-add/server.js';
 import { createGitBranchListHandler } from '../git-branch-list/server.js';
 import { createGitBranchCreateHandler } from '../git-branch-create/server.js';
 import { createGitBranchMergeHandler } from '../git-branch-merge/server.js';
+import { createGitLogHandler } from '../git-log/server.js';
 
 export function createGitServer(): McpServer {
   const server = new McpServer({
@@ -86,6 +87,18 @@ export function createGitServer(): McpServer {
       noCommit: z.boolean().optional().describe('Perform merge without committing'),
     },
     createGitBranchMergeHandler()
+  );
+
+  // Register git_log tool
+  server.tool(
+    'git_log',
+    'Get commit history from a git repository',
+    {
+      repoPath: z.string().min(1).describe('Path to the git repository'),
+      maxCount: z.number().positive().optional().describe('Maximum number of commits to return'),
+      branch: z.string().min(1).optional().describe('Branch name to get logs from'),
+    },
+    createGitLogHandler()
   );
 
   return server;

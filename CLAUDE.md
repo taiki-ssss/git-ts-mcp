@@ -87,6 +87,9 @@ src/features/git-[feature-name]/
 - ✅ `git_status` - リポジトリ状態確認（ブランチ情報、変更ファイル一覧）
 - ✅ `git_add` - ステージング管理（個別/全ファイル対応）
 - ✅ `git_branch_list` - ブランチ一覧取得（ローカル/リモート対応）
+- ✅ `git_branch_create` - ブランチ作成（ベースブランチ指定可能）
+- ✅ `git_branch_merge` - ブランチマージ（複数戦略対応）
+- ✅ `git_log` - コミット履歴取得（件数/ブランチ指定可能）
 
 ## エラーハンドリング
 
