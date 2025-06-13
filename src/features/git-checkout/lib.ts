@@ -1,8 +1,8 @@
 import { Result, ok, err } from 'neverthrow';
-import { simpleGit, StatusResult } from 'simple-git';
-import { existsSync } from 'fs';
+import { StatusResult } from 'simple-git';
 import { GitCheckoutInput, GitCheckoutResult } from './types.js';
 import createDebug from 'debug';
+import { validateAndInitializeGit, validateNonEmptyString } from '../../shared/lib/git-utils.js';
 
 const debug = createDebug('mcp:git-checkout');
 
@@ -11,29 +11,19 @@ export async function gitCheckout(input: GitCheckoutInput): Promise<Result<GitCh
 
   const { repoPath, target, force = false, files } = input;
 
-  if (!repoPath || !repoPath.trim()) {
-    debug('Empty repository path provided');
-    return err(new Error('Repository path cannot be empty'));
+  const targetValidation = validateNonEmptyString(target, 'Target');
+  if (targetValidation.isErr()) {
+    return err(targetValidation.error);
   }
 
-  if (!target || !target.trim()) {
-    debug('Empty target provided');
-    return err(new Error('Target cannot be empty'));
+  const gitResult = await validateAndInitializeGit(repoPath);
+  if (gitResult.isErr()) {
+    return err(gitResult.error);
   }
 
-  if (!existsSync(repoPath)) {
-    debug('Repository path does not exist:', repoPath);
-    return err(new Error('Repository path does not exist'));
-  }
-
-  const git = simpleGit(repoPath);
+  const { git } = gitResult.value;
 
   try {
-    const isRepo = await git.checkIsRepo();
-    if (!isRepo) {
-      debug('Path is not a git repository:', repoPath);
-      return err(new Error('The specified path is not a git repository'));
-    }
 
     // 現在のブランチを取得
     const previousBranch = await git.revparse(['--abbrev-ref', 'HEAD']);

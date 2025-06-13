@@ -1,7 +1,7 @@
-import { simpleGit } from 'simple-git';
 import { Result, ok, err } from 'neverthrow';
 import createDebug from 'debug';
 import type { GitBranchMergeResult, MergeStrategy } from './types.js';
+import { validateAndInitializeGit, validateNonEmptyString } from '../../shared/lib/git-utils.js';
 
 const debug = createDebug('mcp:git-branch-merge');
 
@@ -22,13 +22,22 @@ export async function mergeBranch(
       noCommit,
     });
 
-    const git = simpleGit(repoPath);
+    const sourceBranchValidation = validateNonEmptyString(sourceBranch, 'Source branch');
+    if (sourceBranchValidation.isErr()) {
+      return err(sourceBranchValidation.error);
+    }
 
-    // Get current branch if target branch is not specified
+    const gitResult = await validateAndInitializeGit(repoPath);
+    if (gitResult.isErr()) {
+      return err(gitResult.error);
+    }
+
+    const { git } = gitResult.value;
+
     let currentBranch = targetBranch;
     if (!targetBranch) {
-      currentBranch = await git.revparse(['--abbrev-ref', 'HEAD']);
-      currentBranch = currentBranch.trim();
+      const branchResult = await git.revparse(['--abbrev-ref', 'HEAD']);
+      currentBranch = branchResult.trim();
       debug('Using current branch as target', { currentBranch });
     }
 
