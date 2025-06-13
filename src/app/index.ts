@@ -1,13 +1,13 @@
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { createGitCommitServer } from "../features/git-commit/index.js";
+import { createGitServer } from "../features/git/index.js";
 
-// Create Git Commit MCP server
-const server = createGitCommitServer();
+// Create Git MCP server with multiple tools
+const server = createGitServer();
 
 async function startStdioServer() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Git Commit MCP Server running on stdio");
+  console.error("Git MCP Server running on stdio");
 }
 
 startStdioServer().catch((error) => {

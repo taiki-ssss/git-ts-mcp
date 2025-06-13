@@ -10,6 +10,7 @@
       "Bash(pwd)",
       "Bash(tree:*)",
       "Bash(ls:*)",
+      "Bash(mkdir:*)",
       "Edit(README.md)",
       "Edit(project/requirements-definition.md)",
       "Edit(project/tasks/**)",
