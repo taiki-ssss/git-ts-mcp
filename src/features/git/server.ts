@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { gitCommitHandler } from '../git-commit/server.js';
 import { gitStatusHandler } from '../git-status/server.js';
 import { createGitAddHandler } from '../git-add/server.js';
+import { createGitBranchListHandler } from '../git-branch-list/server.js';
 
 export function createGitServer(): McpServer {
   const server = new McpServer({
@@ -44,6 +45,17 @@ export function createGitServer(): McpServer {
       files: z.array(z.string()).optional().describe('Files to add (optional, defaults to all)'),
     },
     createGitAddHandler()
+  );
+
+  // Register git_branch_list tool
+  server.tool(
+    'git_branch_list',
+    'Get the list of branches in a git repository',
+    {
+      repoPath: z.string().min(1).describe('Path to the git repository'),
+      includeRemote: z.boolean().optional().describe('Include remote branches in the list'),
+    },
+    createGitBranchListHandler()
   );
 
   return server;
