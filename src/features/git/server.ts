@@ -8,6 +8,7 @@ import { createGitBranchCreateHandler } from '../git-branch-create/server.js';
 import { createGitBranchMergeHandler } from '../git-branch-merge/server.js';
 import { createGitLogHandler } from '../git-log/server.js';
 import { createGitCheckoutHandler } from '../git-checkout/server.js';
+import { createGitPushHandler } from '../git-push/server.js';
 
 export function createGitServer(): McpServer {
   const server = new McpServer({
@@ -113,6 +114,22 @@ export function createGitServer(): McpServer {
       files: z.array(z.string().min(1)).optional().describe('Specific files to checkout'),
     },
     createGitCheckoutHandler()
+  );
+
+  // Register git_push tool
+  server.tool(
+    'git_push',
+    'Push changes to remote repository',
+    {
+      repoPath: z.string().min(1).describe('Path to the git repository'),
+      remote: z.string().optional().describe('Remote name (default: origin)'),
+      branch: z.string().optional().describe('Branch to push (default: current branch)'),
+      tags: z.boolean().optional().describe('Push tags'),
+      force: z.boolean().optional().describe('Force push'),
+      setUpstream: z.boolean().optional().describe('Set upstream branch'),
+      deleteRemote: z.boolean().optional().describe('Delete remote branch'),
+    },
+    createGitPushHandler()
   );
 
   return server;

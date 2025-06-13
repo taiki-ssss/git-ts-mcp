@@ -2,6 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+@project/RULE.md
+@project/TECK_STACK.md
+
 ## プロジェクト概要
 
 git-ts-mcp は Model Context Protocol (MCP) サーバーの実装で、Git操作をMCPツールとして提供します。
@@ -91,6 +94,7 @@ src/features/git-[feature-name]/
 - ✅ `git_branch_merge` - ブランチマージ（複数戦略対応）
 - ✅ `git_log` - コミット履歴取得（件数/ブランチ指定可能）
 - ✅ `git_checkout` - ブランチ切り替え/ファイル復元（強制切り替え対応）
+- ✅ `git_push` - リモートへのプッシュ（タグ、強制、上流設定、削除対応）
 
 ## エラーハンドリング
 
@@ -160,3 +164,4 @@ DEBUG=mcp:git-commit,mcp:git-status npm run start
 - git-log
 - git-checkout
 - git-branch-merge
+- git-push
