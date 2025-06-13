@@ -1,10 +1,21 @@
-# git-small-mcp
+# git-ts-mcp
 
-Git操作をMCP (Model Context Protocol) ツールとして提供するサーバー実装
+Git操作をMCP (Model Context Protocol) ツールとして提供するサーバー実装。
+Claudeやその他のAIアシスタントからGitコマンドを安全に実行できるようにするMCPサーバーです。
 
-## 機能
+## 概要
 
-### 実装済みのGitツール
+本プロジェクトは、Model Context Protocol (MCP) を使用してGit操作をツールとして提供するサーバー実装です。AIアシスタントがGitリポジトリに対して様々な操作を実行できるようになります。
+
+## 主な特徴
+
+- 🔧 8つの主要なGit操作をMCPツールとして実装
+- 🏗️ Feature-Sliced Design (FSD) アーキテクチャを採用
+- 🧪 100%のテストカバレッジを維持
+- 🔍 Zod によるスキーマバリデーション
+- ⚡ neverthrow による型安全なエラーハンドリング
+
+## 実装済みのGitツール
 
 - ✅ **git_commit** - Gitコミットを作成（自動ステージング付き）
 - ✅ **git_status** - リポジトリの状態を取得（ブランチ情報、変更ファイル一覧）
@@ -15,45 +26,84 @@ Git操作をMCP (Model Context Protocol) ツールとして提供するサーバ
 - ✅ **git_log** - コミット履歴を取得（件数制限、ブランチ指定可能）
 - ✅ **git_checkout** - ブランチを切り替えまたはファイルを復元（強制切り替え、ファイル指定対応）
 
-## インストール
 
+## セットアップ
+
+### 必要な環境
+
+- Node.js 18以上
+- npm または yarn
+
+### インストール手順
+
+1. リポジトリをクローン:
+```bash
+git clone https://github.com/yourusername/git-small-mcp.git
+cd git-small-mcp
+```
+
+2. 依存関係をインストール:
 ```bash
 npm install
+```
+
+3. ビルド:
+```bash
 npm run build
 ```
 
-## 使用方法
+## MCPセットアップ
 
-MCPサーバーとして起動:
+### Claude Desktop
 
-```bash
-npm run start
+1. Claude Desktopの設定ファイルを開きます：
+   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+
+2. 以下の設定を追加します：
+
+```json
+{
+  "mcpServers": {
+    "git-ts-mcp": {
+      "command": "node",
+      "args": ["/path/to/git-ts-mcp/dist/index.js"],
+      "cwd": "/path/to/your/git/project"
+    }
+  }
+}
 ```
 
-## 開発
+3. Claude Desktopを再起動します。
 
-### コマンド
+### VS Code
 
-```bash
-# ビルド
-npm run build
+1. MCP拡張機能をインストール
+2. 設定でMCPサーバーを追加：
 
-# テスト実行
-npm run test
-
-# テストカバレッジ確認（100%必須）
-npm run test:cov
-
-# リント
-npm run lint
-
-# リント修正
-npm run lint:fix
+```json
+{
+  "mcp.servers": {
+    "git-ts-mcp": {
+      "command": "node",
+      "args": ["/path/to/git-ts-mcp/dist/index.js"],
+      "env": {
+        "DEBUG": "mcp:*"
+      }
+    }
+  }
+}
 ```
 
-### アーキテクチャ
+### 環境変数（オプション）
 
-Feature-Sliced Design (FSD) を採用：
+- `DEBUG=mcp:*` - デバッグログを有効化（debugパッケージを使用）
+  - 特定機能のみ: `DEBUG=mcp:git-commit`
+  - 複数機能: `DEBUG=mcp:git-commit,mcp:git-status`
+
+## アーキテクチャ
+
+本プロジェクトはFeature-Sliced Design (FSD) を採用しており、以下の層構造で構成されています：
 
 ```
 src/
@@ -72,24 +122,35 @@ src/
 └── shared/      # 共有層（ユーティリティ）
 ```
 
-## プロジェクト管理
+各機能モジュールは独立しており、下位レイヤーからのみインポート可能です。
 
+## 技術スタック
+
+- **TypeScript**: 厳格な型チェックを有効化
+- **@modelcontextprotocol/sdk**: MCPフレームワーク
+- **simple-git**: Git操作ライブラリ
+- **zod**: スキーマバリデーション
+- **neverthrow**: 関数型エラーハンドリング
+- **vitest**: テストフレームワーク
+- **debug**: デバッグユーティリティ
+
+
+## 使用方法
+
+### スタンドアロンモード
+
+```bash
+npm run start
 ```
-project/
-├── RULE.md                    # 開発ルール
-├── TECK_STACK.md              # 技術スタック
-├── requirements-definition.md # 要件定義書
-├── tasks/                     # タスク管理
-│   ├── backlog/               # 未着手タスク
-│   ├── in-progress/           # 進行中タスク
-│   └── done/                  # 完了タスク
-└── template/                  # タスクテンプレート
+
+### プログラマティックな使用
+
+```typescript
+import { createGitMCPServer } from 'git-ts-mcp';
+
+const server = createGitMCPServer();
+await server.start();
 ```
-
-## カスタムコマンド
-
-- `/project:rule`: プロジェクトのルールをに確認する
-- `/project:task`: タスクの件数を確認する
 
 ## ツール使用例
 
@@ -163,7 +224,25 @@ project/
 }
 ```
 
+
+## トラブルシューティング
+
+### デバッグログの有効化
+
+```bash
+# 全てのデバッグログを表示
+DEBUG=mcp:* npm run start
+
+# 特定の機能のみ
+DEBUG=mcp:git-commit npm run start
+```
+
+## ライセンス
+
+MIT License
+
 ## 参考リンク
 
+- [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 - [Claude Code Manage permissions](https://docs.anthropic.com/en/docs/claude-code/security)
 - [Feature-Sliced Design](https://feature-sliced.github.io/documentation/)

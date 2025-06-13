@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-git-small-mcp は Model Context Protocol (MCP) サーバーの実装で、Git操作をMCPツールとして提供します。
+git-ts-mcp は Model Context Protocol (MCP) サーバーの実装で、Git操作をMCPツールとして提供します。
 
 ## アーキテクチャ
 
@@ -142,11 +142,21 @@ server.tool(
 
 ## デバッグ
 
-debugパッケージを使用した構造化ログ：
+debugパッケージを使用した構造化ログ（一部の機能で実装済み）：
 ```bash
 # デバッグログを有効化
 DEBUG=mcp:* npm run start
 
 # 特定の機能のみ
 DEBUG=mcp:git-commit npm run start
+
+# 複数機能の指定
+DEBUG=mcp:git-commit,mcp:git-status npm run start
 ```
+
+現在デバッグログが実装されている機能：
+- git-commit
+- git-status  
+- git-log
+- git-checkout
+- git-branch-merge
