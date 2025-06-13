@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { gitCommitHandler } from '../git-commit/server.js';
 import { gitStatusHandler } from '../git-status/server.js';
+import { createGitAddHandler } from '../git-add/server.js';
 
 export function createGitServer(): McpServer {
   const server = new McpServer({
@@ -32,6 +33,17 @@ export function createGitServer(): McpServer {
       repoPath: z.string().min(1).describe('Path to the git repository'),
     },
     gitStatusHandler
+  );
+
+  // Register git_add tool
+  server.tool(
+    'git_add',
+    'Add files to the git staging area',
+    {
+      repoPath: z.string().min(1).describe('Path to the git repository'),
+      files: z.array(z.string()).optional().describe('Files to add (optional, defaults to all)'),
+    },
+    createGitAddHandler()
   );
 
   return server;
