@@ -5,7 +5,7 @@
   "bin": "./dist/app/index.js",
   "scripts": {
     "build": "tsc && chmod 755 dist/app/index.js",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "lint": "eslint . && tsc --noEmit",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
