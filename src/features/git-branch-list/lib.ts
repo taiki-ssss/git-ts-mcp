@@ -1,8 +1,7 @@
 import { Result, ok, err } from 'neverthrow';
-import { simpleGit, SimpleGit } from 'simple-git';
-import { existsSync } from 'fs';
 import debugFactory from 'debug';
 import type { GitBranchListResult } from './types.js';
+import { validateAndInitializeGit } from '../../shared/lib/git-utils.js';
 
 const debug = debugFactory('mcp:git-branch-list');
 
@@ -12,22 +11,15 @@ export async function getBranchList(
 ): Promise<Result<GitBranchListResult, Error>> {
   debug('Getting branch list', { repoPath, includeRemote });
 
-  // Validate input
-  if (!repoPath || repoPath.trim() === '') {
-    debug('Empty repository path provided');
-    return err(new Error('Repository path cannot be empty'));
+  const gitResult = await validateAndInitializeGit(repoPath);
+  if (gitResult.isErr()) {
+    return err(gitResult.error);
   }
 
-  // Check if the repository exists
-  if (!existsSync(repoPath)) {
-    debug('Repository path does not exist', { repoPath });
-    return err(new Error(`Repository path does not exist: ${repoPath}`));
-  }
+  const { git } = gitResult.value;
 
   try {
-    const git: SimpleGit = simpleGit(repoPath);
 
-    // Get local branches
     debug('Fetching local branches');
     const branchSummary = await git.branchLocal();
     
@@ -42,12 +34,11 @@ export async function getBranchList(
       local,
     };
 
-    // Get remote branches if requested
     if (includeRemote) {
       debug('Fetching remote branches');
       const allBranches = await git.branch();
       
-      const remoteBranches = allBranches.all.filter(branch => 
+      const remoteBranches = allBranches.all.filter((branch: string) => 
         branch.startsWith('remotes/')
       );
       

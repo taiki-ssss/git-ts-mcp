@@ -2,8 +2,8 @@ import { z } from 'zod';
 import type { GitAddResult } from './types.js';
 import { Result, ok, err } from 'neverthrow';
 import debugFactory from 'debug';
-import { simpleGit, SimpleGit } from 'simple-git';
-import { existsSync } from 'fs';
+import { validateAndInitializeGit } from '../../shared/lib/git-utils.js';
+import { createErrorResult } from '../../shared/types/git-common.js';
 
 const debug = debugFactory('mcp:git-add');
 
@@ -30,12 +30,7 @@ export function createGitAddHandler() {
     const result = await performGitAdd(repoPath, files);
 
     if (result.isErr()) {
-      return {
-        content: [{
-          type: 'text' as const,
-          text: `Error: ${result.error.message}`,
-        }],
-      };
+      return createErrorResult(result.error);
     }
 
     return {
@@ -53,22 +48,15 @@ export async function performGitAdd(
 ): Promise<Result<GitAddResult, Error>> {
   debug('Starting git add operation', { repoPath, files });
 
-  // Validate input
-  if (!repoPath || repoPath.trim() === '') {
-    debug('Empty repository path provided');
-    return err(new Error('Repository path cannot be empty'));
+  const gitResult = await validateAndInitializeGit(repoPath);
+  if (gitResult.isErr()) {
+    return err(gitResult.error);
   }
 
-  // Check if the repository exists
-  if (!existsSync(repoPath)) {
-    debug('Repository path does not exist', { repoPath });
-    return err(new Error(`Repository path does not exist: ${repoPath}`));
-  }
+  const { git } = gitResult.value;
 
   try {
-    const git: SimpleGit = simpleGit(repoPath);
 
-    // Add files to staging
     if (files && files.length > 0) {
       debug('Adding specific files', { files });
       await git.add(files);
@@ -77,11 +65,10 @@ export async function performGitAdd(
       await git.add('.');
     }
 
-    // Get status to see what was added
     const status = await git.status();
     const addedFiles = status.files
-      .filter(file => file.index !== ' ' && file.index !== '?')
-      .map(file => file.path);
+      .filter((file: any) => file.index !== ' ' && file.index !== '?')
+      .map((file: any) => file.path);
 
     const result: GitAddResult = {
       addedFiles,
