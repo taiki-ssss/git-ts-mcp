@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "bin": {
-    "git-ts-mcp": "./src/app/index.ts"
+    "git-ts-mcp": "./src/app/index.js"
   },
   "scripts": {
     "build": "tsc && chmod 755 dist/app/index.js",
