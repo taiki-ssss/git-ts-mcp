@@ -1,5 +1,5 @@
 {
-  "name": "mcp-template",
+  "name": "git-ts-mcp",
   "version": "1.0.0",
   "type": "module",
   "bin": "src/app/index.ts",
