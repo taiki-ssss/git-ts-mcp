@@ -67,9 +67,8 @@ npm run build
 {
   "mcpServers": {
     "git-ts-mcp": {
-      "command": "node",
-      "args": ["/path/to/git-ts-mcp/dist/index.js"],
-      "cwd": "/path/to/your/git/project"
+      "command": "npx",
+      "args": ["-y", "git+https://github.com/taiki-ssss/git-ts-mcp"]
     }
   }
 }
@@ -86,11 +85,8 @@ npm run build
 {
   "mcp.servers": {
     "git-ts-mcp": {
-      "command": "node",
-      "args": ["/path/to/git-ts-mcp/dist/index.js"],
-      "env": {
-        "DEBUG": "mcp:*"
-      }
+      "command": "npx",
+      "args": ["-y", "git+https://github.com/taiki-ssss/git-ts-mcp"]
     }
   }
 }
