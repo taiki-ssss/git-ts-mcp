@@ -9,7 +9,8 @@
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
     "test:fail": "vitest run 2>&1 | grep -E '×' || echo 'No test failures found!'",
-    "start": "node dist/app/index.js"
+    "start": "node dist/app/index.js",
+    "remote-start": "tsc src/app/index.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
