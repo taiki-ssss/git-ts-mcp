@@ -6,6 +6,11 @@
     "git-ts-mcp": "./src/app/index.js"
   },
   "main": "./dist/app/index.js",
+  "files": [
+    "dist/**/*",
+    "package.json",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc && chmod 755 dist/app/index.js",
     "lint": "eslint . && tsc --noEmit",
