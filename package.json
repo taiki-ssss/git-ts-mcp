@@ -2,7 +2,9 @@
   "name": "git-ts-mcp",
   "version": "1.0.0",
   "type": "module",
-  "bin": "src/app/index.ts",
+  "bin": {
+    "git-ts-mcp": "./dist/app/index.js"
+  },
   "scripts": {
     "build": "tsc && chmod 755 dist/app/index.js",
     "lint": "eslint . && tsc --noEmit",
